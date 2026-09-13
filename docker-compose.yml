@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nas
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: nas
+    volumes:
+      - /opt/nas/db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nas"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://nas:${POSTGRES_PASSWORD}@db:5432/nas
+      NAS_DATA_DIR: /data
+      PORT: "3001"
+    ports:
+      - "3001:3001"
+    volumes:
+      - /opt/nas/data:/data

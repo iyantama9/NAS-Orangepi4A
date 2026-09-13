@@ -1,0 +1,27 @@
+{
+  "name": "api",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "migrate": "tsx src/migrate.ts"
+  },
+  "dependencies": {
+    "@nas/shared": "workspace:*",
+    "@node-rs/argon2": "^2.0.2",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "express": "^5.0.3",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.0"
+  }
+}

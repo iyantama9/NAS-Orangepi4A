@@ -117,12 +117,13 @@ export async function uploadFile(
       }),
     }).then((r) => j<UploadInitResponse>(r));
     uploadId = init.uploadId;
+  } else {
+    // Resume: tanya chunk mana yang sudah ada pada sesi sebelumnya.
+    const status = await fetch(`/api/uploads/${uploadId}`).then((r) =>
+      j<UploadStatusResponse>(r)
+    );
+    received = new Set(status.receivedChunks);
   }
-  // Resume: tanya chunk mana yang sudah ada.
-  const status = await fetch(`/api/uploads/${uploadId}`).then((r) =>
-    j<UploadStatusResponse>(r)
-  );
-  received = new Set(status.receivedChunks);
 
   for (let i = 0; i < totalChunks; i++) {
     onProgress({

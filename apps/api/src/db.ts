@@ -5,6 +5,9 @@ export const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ??
     "postgres://nas:nas@localhost:5432/nas",
+  max: 25,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
 });
 
 export async function query<T extends QueryResultRow = any>(

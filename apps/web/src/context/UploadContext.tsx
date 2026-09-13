@@ -43,122 +43,122 @@ function fmtBytes(n: number): string {
   return `${n.toFixed(1)} ${u[i]}`;
 }
 
+const MAX_CONCURRENT_UPLOADS = 3;
+
 export function UploadProvider({ children }: { children: React.ReactNode }) {
   const [uploads, setUploads] = useState<Record<string, UploadItem>>({});
   const [isExpanded, setIsExpanded] = useState(true);
   const qc = useQueryClient();
+
+  const itemsMapRef = useRef<Map<string, UploadItem>>(new Map());
   const queueRef = useRef<string[]>([]);
-  const isProcessingRef = useRef(false);
+  const activeWorkersRef = useRef(0);
 
-  const processQueue = useCallback(async () => {
-    if (isProcessingRef.current || queueRef.current.length === 0) return;
-    isProcessingRef.current = true;
+  const syncState = useCallback(() => {
+    const next: Record<string, UploadItem> = {};
+    for (const [id, item] of itemsMapRef.current.entries()) {
+      next[id] = { ...item };
+    }
+    setUploads(next);
+  }, []);
 
+  const runWorker = useCallback(async () => {
     while (queueRef.current.length > 0) {
       const uploadId = queueRef.current.shift();
       if (!uploadId) continue;
 
-      let currentItem: UploadItem | undefined;
-      setUploads((prev) => {
-        currentItem = prev[uploadId];
-        return prev;
-      });
-
-      if (!currentItem || currentItem.state === "done") continue;
+      const item = itemsMapRef.current.get(uploadId);
+      if (!item || item.state === "done" || item.state === "error") continue;
 
       try {
-        const item = currentItem;
         await uploadFile(
           item.file,
           item.parentId,
           (p: UploadProgress) => {
-            setUploads((prev) => {
-              if (!prev[uploadId]) return prev;
-              return {
-                ...prev,
-                [uploadId]: {
-                  ...prev[uploadId],
-                  uploadedBytes: p.uploadedBytes,
-                  totalBytes: p.totalBytes,
-                  state: p.state,
-                  error: p.error,
-                },
-              };
-            });
+            const current = itemsMapRef.current.get(uploadId);
+            if (current) {
+              current.uploadedBytes = p.uploadedBytes;
+              current.totalBytes = p.totalBytes;
+              current.state = p.state;
+              current.error = p.error;
+              syncState();
+            }
           }
         );
 
-        // Upload sukses
+        const current = itemsMapRef.current.get(uploadId);
+        if (current) {
+          current.state = "done";
+          current.uploadedBytes = current.totalBytes;
+          syncState();
+        }
+
         qc.invalidateQueries({ queryKey: ["nodes"] });
         qc.invalidateQueries({ queryKey: ["systemInfo"] });
       } catch (err: any) {
-        setUploads((prev) => {
-          if (!prev[uploadId]) return prev;
-          return {
-            ...prev,
-            [uploadId]: {
-              ...prev[uploadId],
-              state: "error",
-              error: err.message || "Gagal mengunggah",
-            },
-          };
-        });
+        const current = itemsMapRef.current.get(uploadId);
+        if (current) {
+          current.state = "error";
+          current.error = err.message || "Gagal mengunggah";
+          syncState();
+        }
       }
     }
+  }, [qc, syncState]);
 
-    isProcessingRef.current = false;
-  }, [qc]);
+  const drainQueue = useCallback(() => {
+    while (
+      activeWorkersRef.current < MAX_CONCURRENT_UPLOADS &&
+      queueRef.current.length > 0
+    ) {
+      activeWorkersRef.current++;
+      runWorker().finally(() => {
+        activeWorkersRef.current--;
+        drainQueue();
+      });
+    }
+  }, [runWorker]);
 
   const startUploads = useCallback(
     (files: FileList | File[], parentId: string | null = null) => {
       const fileList = Array.from(files);
       if (fileList.length === 0) return;
 
-      const newIds: string[] = [];
-      setUploads((prev) => {
-        const next = { ...prev };
-        fileList.forEach((file) => {
-          const id = `upl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-          next[id] = {
-            id,
-            file,
-            parentId,
-            uploadedBytes: 0,
-            totalBytes: file.size,
-            state: "queued",
-          };
-          newIds.push(id);
-        });
-        return next;
+      fileList.forEach((file) => {
+        const id = `upl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const newItem: UploadItem = {
+          id,
+          file,
+          parentId,
+          uploadedBytes: 0,
+          totalBytes: file.size,
+          state: "queued",
+        };
+        itemsMapRef.current.set(id, newItem);
+        queueRef.current.push(id);
       });
 
-      queueRef.current.push(...newIds);
+      syncState();
       setIsExpanded(true);
-      setTimeout(processQueue, 50);
+      drainQueue();
     },
-    [processQueue]
+    [syncState, drainQueue]
   );
 
   const cancelUpload = useCallback((id: string) => {
     queueRef.current = queueRef.current.filter((item) => item !== id);
-    setUploads((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  }, []);
+    itemsMapRef.current.delete(id);
+    syncState();
+  }, [syncState]);
 
   const clearCompleted = useCallback(() => {
-    setUploads((prev) => {
-      const next: Record<string, UploadItem> = {};
-      Object.entries(prev).forEach(([id, item]) => {
-        if (item.state !== "done" && item.state !== "error") {
-          next[id] = item;
-        }
-      });
-      return next;
-    });
-  }, []);
+    for (const [id, item] of Array.from(itemsMapRef.current.entries())) {
+      if (item.state === "done" || item.state === "error") {
+        itemsMapRef.current.delete(id);
+      }
+    }
+    syncState();
+  }, [syncState]);
 
   const uploadList = Object.values(uploads);
   const activeCount = uploadList.filter(

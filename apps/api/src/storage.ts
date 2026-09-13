@@ -51,8 +51,12 @@ export async function writeChunk(
     if (hash.digest("hex") !== expectedSha) {
       throw new Error("chunk hash mismatch");
     }
-    // Kalau sudah ada (dedup), tulisan tmp ini cukup dibuang.
-    await fs.rename(tmp, chunkPath(expectedSha));
+    // Kalau sudah ada (dedup) dari request bersamaan, cukup hapus file tmp
+    try {
+      await fs.rename(tmp, chunkPath(expectedSha));
+    } catch {
+      await fs.rm(tmp, { force: true }).catch(() => {});
+    }
   } catch (e) {
     await fs.rm(tmp, { force: true }).catch(() => {});
     throw e;

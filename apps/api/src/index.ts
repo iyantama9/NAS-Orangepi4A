@@ -17,7 +17,16 @@ import { runMigrations } from "./migrate.js";
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
 
-app.use(compression());
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.path.includes("/content") || req.headers.range) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
+  })
+);
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 

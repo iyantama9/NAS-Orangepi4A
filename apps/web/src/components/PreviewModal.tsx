@@ -118,8 +118,8 @@ export default function PreviewModal({
       >
         {/* Studio Modal Header */}
         <header className="studio-preview-header">
-          <div className="preview-file-info">
-            <div className="preview-icon-squircle">
+          <div className="studio-header-left">
+            <div className="studio-file-icon-bubble">
               {top === "image" && <ImageIcon size={18} className="text-plasma" />}
               {top === "video" && <Film size={18} className="text-copper" />}
               {top === "audio" && <Music size={18} className="text-pink" />}
@@ -128,21 +128,21 @@ export default function PreviewModal({
                 <FileText size={18} className="text-muted" />
               )}
             </div>
-            <div className="preview-meta-details">
-              <h2 className="preview-file-title" title={node.name}>
+            <div className="studio-title-block">
+              <h2 className="studio-file-title" title={node.name}>
                 {node.name}
               </h2>
-              <div className="preview-file-sub">
-                <span className="preview-badge-pill">
+              <div className="studio-file-meta-badge">
+                <span className="badge-mime-tag">
                   {isPdf ? "PDF Document" : mime || "Binary"}
                 </span>
-                <span className="preview-dot-sep">•</span>
+                <span className="dot-sep">•</span>
                 <span>{fmtSize(node.size)}</span>
               </div>
             </div>
           </div>
 
-          <div className="preview-header-actions">
+          <div className="studio-header-actions">
             <button
               className="btn-studio-action"
               onClick={copyShareLink}
@@ -373,11 +373,23 @@ export default function PreviewModal({
           {/* 4. PDF DOCUMENT PREVIEW */}
           {isPdf && (
             <div className="studio-pdf-container">
-              <iframe
-                src={url}
+              <object
+                data={`${url}#view=FitH`}
+                type="application/pdf"
                 className="studio-pdf-iframe"
-                title={node.name}
-              />
+              >
+                <div className="studio-fallback-box">
+                  <div className="fallback-icon-bubble">
+                    <FileText size={42} strokeWidth={1.5} />
+                  </div>
+                  <h3>Dokumen PDF</h3>
+                  <p>Pratinjau langsung tidak didukung di perangkat ini.</p>
+                  <a className="btn-upload-pill" href={url} target="_blank" rel="noreferrer">
+                    <ExternalLink size={16} />
+                    <span>Buka PDF di Tab Baru</span>
+                  </a>
+                </div>
+              </object>
             </div>
           )}
 

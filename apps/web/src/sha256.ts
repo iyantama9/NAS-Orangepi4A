@@ -13,7 +13,21 @@ const K = new Uint32Array([
   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
 ]);
 
-export function sha256Hex(data: ArrayBuffer | Uint8Array): string {
+export async function sha256Hex(data: ArrayBuffer | Uint8Array): Promise<string> {
+  if (typeof crypto !== "undefined" && crypto.subtle) {
+    try {
+      const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", bytes as unknown as BufferSource);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+    } catch {
+      // fallback to pure JS if subtle fails
+    }
+  }
+  return sha256HexSync(data);
+}
+
+export function sha256HexSync(data: ArrayBuffer | Uint8Array): string {
   const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
   const bitLen = bytes.length * 8;
   // padding: 0x80 lalu zeros hingga ≡ 56 mod 64, lalu 8 byte panjang

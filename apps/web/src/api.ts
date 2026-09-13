@@ -134,21 +134,51 @@ export async function uploadFile(
     });
     const blob = file.slice(i * CHUNK, Math.min((i + 1) * CHUNK, file.size));
     const buf = await blob.arrayBuffer();
-    const sha = sha256Hex(buf);
+    const sha = await sha256Hex(buf);
 
     if (!received.has(i)) {
-      // Server mungkin sudah punya chunk sama (dedup) — kirim tetap, server skip kalau punya.
-      const put = await fetch(`/api/uploads/${uploadId}/chunks/${i}`, {
-        method: "PUT",
-        headers: { "X-Chunk-Sha256": sha, "Content-Type": "application/octet-stream" },
-        body: buf,
+      onProgress({
+        file,
+        uploadedBytes: i * CHUNK,
+        totalBytes: file.size,
+        state: "uploading",
       });
-      if (!put.ok) throw new Error(`chunk ${i} gagal: ${await put.text()}`);
+
+      // Streaming upload dengan event progress real-time per byte
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", `/api/uploads/${uploadId}/chunks/${i}`);
+        xhr.setRequestHeader("X-Chunk-Sha256", sha);
+        xhr.setRequestHeader("Content-Type", "application/octet-stream");
+
+        xhr.upload.onprogress = (evt) => {
+          if (evt.lengthComputable) {
+            const currentTotal = Math.min(file.size, i * CHUNK + evt.loaded);
+            onProgress({
+              file,
+              uploadedBytes: currentTotal,
+              totalBytes: file.size,
+              state: "uploading",
+            });
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`chunk ${i} gagal: ${xhr.responseText}`));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error(`Upload chunk ${i} koneksi terputus`));
+        xhr.send(buf);
+      });
     }
     received.add(i);
     onProgress({
       file,
-      uploadedBytes: Math.min(received.size * CHUNK, file.size),
+      uploadedBytes: Math.min((i + 1) * CHUNK, file.size),
       totalBytes: file.size,
       state: "uploading",
     });

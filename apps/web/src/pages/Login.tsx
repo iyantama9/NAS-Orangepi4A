@@ -35,7 +35,7 @@ export default function Login() {
         <div className="led-row">
           <span className="led" />
           <span className="led o" />
-          online — 100.82.5.51
+          online — {window.location.hostname}
         </div>
 
         <form onSubmit={submit}>
@@ -72,7 +72,7 @@ export default function Login() {
         </form>
 
         <div className="auth-foot">
-          self-hosted di <b>Orange Pi 4A</b> · akses via Tailscale
+          self-hosted di <b>Orange Pi 4A</b> · akses via Cloudflare & Tailscale
         </div>
       </div>
     </div>

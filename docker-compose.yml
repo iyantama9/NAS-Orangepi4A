@@ -28,3 +28,12 @@ services:
       - "3001:3001"
     volumes:
       - /opt/nas/data:/data
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - api
+    profiles:
+      - tunnel

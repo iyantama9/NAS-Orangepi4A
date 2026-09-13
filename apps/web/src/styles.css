@@ -60,6 +60,8 @@ html, body, #root {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Scrollbar */
@@ -86,6 +88,9 @@ html, body, #root {
   display: flex;
   min-height: 100vh;
   background: var(--bg-app);
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* =========================================================
@@ -499,11 +504,11 @@ html, body, #root {
 
 .search-input-box input {
   width: 100%;
-  height: 40px;
-  padding: 0 14px 0 38px;
+  height: 42px;
+  padding: 0 16px 0 42px;
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   color: var(--text-primary);
   font-size: 13px;
   outline: none;
@@ -512,7 +517,7 @@ html, body, #root {
 
 .search-input-box input:focus {
   border-color: var(--amber);
-  box-shadow: 0 0 0 2px var(--amber-subtle);
+  box-shadow: 0 0 0 3px var(--amber-subtle);
   background: var(--bg-elevated);
 }
 
@@ -525,9 +530,9 @@ html, body, #root {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 40px;
-  padding: 0 16px;
-  border-radius: var(--radius-sm);
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -558,18 +563,28 @@ html, body, #root {
   transform: translateY(-1px);
 }
 
-/* Breadcrumbs (for inside folders or other pages) */
+/* Breadcrumbs Badge Capsule */
 .breadcrumbs-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  font-size: 13px;
   color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 6px 14px;
+  width: fit-content;
+  max-width: 100%;
 }
 
 .crumb-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--text-secondary);
   text-decoration: none;
+  font-weight: 500;
   transition: color 0.15s ease;
 }
 
@@ -579,10 +594,11 @@ html, body, #root {
 
 .crumb-arrow {
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .crumb-current {
-  color: #ffffff;
+  color: var(--amber);
   font-weight: 600;
 }
 
@@ -649,7 +665,7 @@ html, body, #root {
   gap: 8px;
   height: 44px;
   padding: 0 24px;
-  border-radius: 10px;
+  border-radius: 999px;
   background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
   color: #ffffff;
   font-size: 14px;
@@ -1892,9 +1908,12 @@ html, body, #root {
     z-index: 100;
     transform: translateX(-100%);
     transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 0 45px rgba(0, 0, 0, 0.85);
-    padding: 20px 16px;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+    padding: 24px 18px;
     overflow-y: auto;
+    border-top-right-radius: 24px;
+    border-bottom-right-radius: 24px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .sidebar.mobile-open {
@@ -1905,34 +1924,39 @@ html, body, #root {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: var(--radius-xs);
-    background: var(--bg-app);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-subtle);
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
   }
 
   .btn-sidebar-close-mobile:hover {
     color: var(--text-primary);
     border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.1);
   }
 
-  /* Mobile Sticky Top Header */
+  /* Mobile Floating Capsule Header (Not Boxy / "Kotak"!) */
   .mobile-header-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--bg-surface);
-    border-bottom: 1px solid var(--border-subtle);
+    padding: 7px 12px 7px 14px;
+    background: rgba(24, 22, 20, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
     position: sticky;
-    top: 0;
+    top: 10px;
     z-index: 60;
     width: 100%;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 16px rgba(249, 115, 22, 0.08);
+    margin-bottom: 22px;
   }
 
   .btn-mobile-menu {
@@ -1941,18 +1965,19 @@ html, body, #root {
     justify-content: center;
     width: 38px;
     height: 38px;
-    border-radius: var(--radius-sm);
-    background: var(--bg-app);
-    border: 1px solid var(--border-subtle);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
   }
 
   .btn-mobile-menu:hover, .btn-mobile-menu:active {
     background: var(--bg-elevated);
     border-color: var(--amber);
     color: var(--amber);
+    transform: scale(1.05);
   }
 
   .mobile-brand {
@@ -1965,28 +1990,35 @@ html, body, #root {
 
   .mobile-logo-emoji {
     font-size: 20px;
+    filter: drop-shadow(0 2px 6px rgba(249, 115, 22, 0.4));
   }
 
   .mobile-brand-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: 700;
     color: #ffffff;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   .mobile-avatar-badge {
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #f97316, #ea580c);
-    color: #000;
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: #ffffff;
     font-weight: 700;
     font-size: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+    box-shadow: 0 3px 12px rgba(249, 115, 22, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-avatar-badge:active {
+    transform: scale(0.95);
   }
 
   /* Main content resets */
@@ -1994,7 +2026,7 @@ html, body, #root {
     margin-left: 0 !important;
     width: 100% !important;
     max-width: 100vw !important;
-    padding: 18px 16px 90px 16px !important;
+    padding: 12px 16px 90px 16px !important;
     box-sizing: border-box;
     overflow-x: hidden;
   }
@@ -2003,7 +2035,7 @@ html, body, #root {
   .dashboard-top-bar {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
+    gap: 12px;
     margin-bottom: 20px;
   }
 
@@ -2012,15 +2044,24 @@ html, body, #root {
   }
 
   .breadcrumbs-bar {
-    flex-wrap: wrap;
-    gap: 4px;
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 6px 14px;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 2px;
   }
 
   .dashboard-actions-right {
     flex-wrap: wrap;
     width: 100%;
-    gap: 8px;
+    gap: 10px;
   }
 
   .search-input-box {
@@ -2029,11 +2070,57 @@ html, body, #root {
     flex: 1 1 100%;
   }
 
+  .search-input-box input {
+    border-radius: 999px;
+    height: 42px;
+    padding: 0 16px 0 42px;
+    font-size: 13.5px;
+  }
+
   .btn-header-action {
     flex: 1;
     min-width: 110px;
     justify-content: center;
-    height: 38px;
+    height: 42px;
+    border-radius: 999px;
+    font-size: 13px;
+    padding: 0 16px;
+  }
+
+  /* Dropzone / Empty State Box */
+  .dropzone-dashed-box {
+    border-radius: 22px !important;
+    padding: 36px 18px !important;
+    background: linear-gradient(180deg, rgba(24, 23, 22, 0.65) 0%, rgba(15, 14, 13, 0.85) 100%) !important;
+    border: 1.5px dashed rgba(249, 115, 22, 0.22) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  }
+
+  .dropzone-cloud-circle {
+    width: 68px !important;
+    height: 68px !important;
+    border-radius: 50% !important;
+    background: rgba(249, 115, 22, 0.1) !important;
+    border: 1px solid rgba(249, 115, 22, 0.25) !important;
+    box-shadow: 0 0 20px rgba(249, 115, 22, 0.15) !important;
+    margin-bottom: 16px !important;
+  }
+
+  .dropzone-title {
+    font-size: 18px !important;
+  }
+
+  .dropzone-desc {
+    font-size: 12.5px !important;
+    margin-bottom: 20px !important;
+    max-width: 320px !important;
+  }
+
+  .btn-upload-pill {
+    border-radius: 999px !important;
+    height: 42px !important;
+    padding: 0 22px !important;
+    font-size: 13px !important;
   }
 
   /* Summary Cards Stack */
@@ -2048,6 +2135,7 @@ html, body, #root {
     text-align: center;
     align-items: center;
     gap: 16px;
+    border-radius: 20px;
   }
 
   .donut-legend {
@@ -2067,11 +2155,11 @@ html, body, #root {
   .file-table-wrap {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: var(--radius-sm);
+    border-radius: 16px;
   }
 
   .file-table {
-    min-width: 520px;
+    min-width: 100%;
   }
 
   .name-text {
@@ -2090,7 +2178,7 @@ html, body, #root {
     bottom: 14px;
     padding: 8px 12px;
     flex-wrap: wrap;
-    border-radius: 16px;
+    border-radius: 20px;
     justify-content: space-between;
     gap: 8px;
   }
@@ -2101,9 +2189,10 @@ html, body, #root {
   }
 
   .btn-batch {
-    height: 32px;
-    padding: 0 10px;
-    font-size: 12px;
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12.5px;
+    border-radius: 999px;
   }
 
   /* Modals */
@@ -2111,7 +2200,8 @@ html, body, #root {
     width: 92vw !important;
     max-width: 420px !important;
     margin: auto !important;
-    padding: 20px 16px !important;
+    padding: 22px 18px !important;
+    border-radius: 20px !important;
   }
 
   .modal-header h3 {
@@ -2134,7 +2224,8 @@ html, body, #root {
   .auth-card {
     width: 100% !important;
     max-width: 380px !important;
-    padding: 24px 20px !important;
+    padding: 28px 22px !important;
+    border-radius: 20px !important;
   }
 }
 
@@ -2168,6 +2259,7 @@ html, body, #root {
   .floating-batch-bar {
     bottom: 10px;
     padding: 6px 10px;
+    border-radius: 18px;
   }
 
   .batch-count-badge {

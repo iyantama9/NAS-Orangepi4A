@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { api } from "../api";
 import Sidebar from "../components/Sidebar";
+import ConfirmModal from "../components/ConfirmModal";
 
 export default function SharedByMe() {
   const nav = useNavigate();
@@ -21,6 +22,13 @@ export default function SharedByMe() {
   const [toast, setToast] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    onConfirm: () => void;
+  } | null>(null);
 
   const me = useQuery({ queryKey: ["me"], queryFn: api.me, retry: false });
   useEffect(() => {
@@ -53,15 +61,23 @@ export default function SharedByMe() {
     triggerToast("Tautan share berhasil disalin!");
   }
 
-  async function revokeShare(token: string, name: string) {
-    if (!confirm(`Cabut akses tautan untuk "${name}"?`)) return;
-    try {
-      await api.revokeShare(token);
-      qc.invalidateQueries({ queryKey: ["shares"] });
-      triggerToast(`Tautan untuk "${name}" dicabut`);
-    } catch (err: any) {
-      triggerToast(err.message || "Gagal mencabut tautan");
-    }
+  function revokeShare(token: string, name: string) {
+    setConfirmState({
+      isOpen: true,
+      title: "Cabut Akses Berbagi",
+      message: `Cabut akses tautan untuk "${name}"? Tautan ini tidak akan dapat diakses lagi.`,
+      confirmText: "Cabut Akses",
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          await api.revokeShare(token);
+          qc.invalidateQueries({ queryKey: ["shares"] });
+          triggerToast(`Tautan untuk "${name}" dicabut`);
+        } catch (err: any) {
+          triggerToast(err.message || "Gagal mencabut tautan");
+        }
+      },
+    });
   }
 
   const list = (shares.data ?? []).filter((s) =>
@@ -250,6 +266,19 @@ export default function SharedByMe() {
           <div className="app-toast">
             <span>{toast}</span>
           </div>
+        )}
+
+        {/* Custom Confirmation Modal */}
+        {confirmState && (
+          <ConfirmModal
+            isOpen={confirmState.isOpen}
+            title={confirmState.title}
+            message={confirmState.message}
+            confirmText={confirmState.confirmText}
+            variant="danger"
+            onConfirm={confirmState.onConfirm}
+            onCancel={() => setConfirmState(null)}
+          />
         )}
       </main>
     </div>

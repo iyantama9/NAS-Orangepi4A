@@ -16,6 +16,7 @@ services:
 
   api:
     build: .
+    hostname: orangepi4a
     restart: unless-stopped
     depends_on:
       db:
@@ -24,10 +25,16 @@ services:
       DATABASE_URL: postgres://nas:${POSTGRES_PASSWORD}@db:5432/nas
       NAS_DATA_DIR: /data
       PORT: "3001"
+      HOST_HOSTNAME: "orangepi4a"
+      HOST_OS: "Debian 12 (bookworm)"
+      HOST_IP: "192.168.1.14"
+      TAILSCALE_IP: "100.82.5.51"
     ports:
       - "3001:3001"
     volumes:
       - /opt/nas/data:/data
+      - /etc/os-release:/etc/host-os-release:ro
+      - /etc/hostname:/etc/host-hostname:ro
 
   tunnel:
     image: cloudflare/cloudflared:latest

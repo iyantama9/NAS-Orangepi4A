@@ -30,8 +30,11 @@ import {
   Clock,
   Wifi,
   Activity,
+  CheckSquare,
 } from "lucide-react";
 import PreviewModal from "../components/PreviewModal";
+import ConfirmModal from "../components/ConfirmModal";
+import PromptModal from "../components/PromptModal";
 import Sidebar from "../components/Sidebar";
 import { useUploadManager } from "../context/UploadContext";
 import { api, contentUrl } from "../api";
@@ -116,11 +119,29 @@ export default function Files({
 
   // Multi-Selection State
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isSelectMode, setIsSelectMode] = useState(false);
 
   // Modals state
   const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [folderNameInput, setFolderNameInput] = useState("");
   const [shareModalData, setShareModalData] = useState<{ node: NodeDto; link: string } | null>(null);
+
+  // In-app Confirm & Prompt Dialog States
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    variant?: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  } | null>(null);
+
+  const [promptState, setPromptState] = useState<{
+    isOpen: boolean;
+    title: string;
+    initialValue: string;
+    onConfirm: (val: string) => void;
+  } | null>(null);
 
   // Move Modal State
   const [moveModalOpen, setMoveModalOpen] = useState(false);
@@ -248,17 +269,26 @@ export default function Files({
   }
 
   // Batch actions
-  async function handleBatchTrash() {
+  function handleBatchTrash() {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Pindahkan ${selectedIds.size} item terpilih ke tempat sampah?`)) return;
-    try {
-      await Promise.all(Array.from(selectedIds).map((id) => api.trash(id)));
-      invalidate();
-      triggerToast(`${selectedIds.size} item dipindahkan ke sampah`);
-      clearSelection();
-    } catch (err: any) {
-      triggerToast(err.message || "Gagal membuang item terpilih");
-    }
+    setConfirmState({
+      isOpen: true,
+      title: "Pindahkan ke Sampah",
+      message: `Pindahkan ${selectedIds.size} item terpilih ke tempat sampah?`,
+      confirmText: "Pindahkan ke Sampah",
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          await Promise.all(Array.from(selectedIds).map((id) => api.trash(id)));
+          invalidate();
+          triggerToast(`${selectedIds.size} item dipindahkan ke sampah`);
+          clearSelection();
+        } catch (err: any) {
+          triggerToast(err.message || "Gagal membuang item terpilih");
+        }
+      },
+    });
   }
 
   async function handleBatchRestore() {
@@ -273,17 +303,26 @@ export default function Files({
     }
   }
 
-  async function handleBatchPurge() {
+  function handleBatchPurge() {
     if (selectedIds.size === 0) return;
-    if (!confirm(`Hapus permanen ${selectedIds.size} item? Tindakan ini tidak dapat dibatalkan.`)) return;
-    try {
-      await Promise.all(Array.from(selectedIds).map((id) => api.purge(id)));
-      invalidate();
-      triggerToast(`${selectedIds.size} item dihapus permanen`);
-      clearSelection();
-    } catch (err: any) {
-      triggerToast(err.message || "Gagal menghapus permanen");
-    }
+    setConfirmState({
+      isOpen: true,
+      title: "Hapus Permanen",
+      message: `Hapus permanen ${selectedIds.size} item? Tindakan ini tidak dapat dibatalkan.`,
+      confirmText: "Hapus Permanen",
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          await Promise.all(Array.from(selectedIds).map((id) => api.purge(id)));
+          invalidate();
+          triggerToast(`${selectedIds.size} item dihapus permanen`);
+          clearSelection();
+        } catch (err: any) {
+          triggerToast(err.message || "Gagal menghapus permanen");
+        }
+      },
+    });
   }
 
   function handleBatchDownload() {
@@ -348,27 +387,43 @@ export default function Files({
     }
   }
 
-  async function handleRename(node: NodeDto) {
-    const next = prompt(`Ubah nama "${node.name}":`, node.name);
-    if (!next || next === node.name) return;
-    try {
-      await api.rename(node.id, next);
-      invalidate();
-      triggerToast("Nama berhasil diubah");
-    } catch (e: any) {
-      triggerToast(e.message || "Gagal mengubah nama");
-    }
+  function handleRename(node: NodeDto) {
+    setPromptState({
+      isOpen: true,
+      title: `Ubah Nama`,
+      initialValue: node.name,
+      onConfirm: async (next: string) => {
+        setPromptState(null);
+        if (!next || next === node.name) return;
+        try {
+          await api.rename(node.id, next);
+          invalidate();
+          triggerToast("Nama berhasil diubah");
+        } catch (e: any) {
+          triggerToast(e.message || "Gagal mengubah nama");
+        }
+      },
+    });
   }
 
-  async function handleTrash(node: NodeDto) {
-    if (!confirm(`Pindahkan "${node.name}" ke sampah?`)) return;
-    try {
-      await api.trash(node.id);
-      invalidate();
-      triggerToast(`"${node.name}" dipindahkan ke sampah`);
-    } catch (e: any) {
-      triggerToast(e.message || "Gagal membuang file");
-    }
+  function handleTrash(node: NodeDto) {
+    setConfirmState({
+      isOpen: true,
+      title: "Pindahkan ke Sampah",
+      message: `Pindahkan "${node.name}" ke sampah?`,
+      confirmText: "Pindahkan",
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          await api.trash(node.id);
+          invalidate();
+          triggerToast(`"${node.name}" dipindahkan ke sampah`);
+        } catch (e: any) {
+          triggerToast(e.message || "Gagal membuang file");
+        }
+      },
+    });
   }
 
   async function handleRestore(node: NodeDto) {
@@ -381,15 +436,24 @@ export default function Files({
     }
   }
 
-  async function handlePurge(node: NodeDto) {
-    if (!confirm(`Hapus permanen "${node.name}"? Aksi ini tidak dapat dibatalkan.`)) return;
-    try {
-      await api.purge(node.id);
-      invalidate();
-      triggerToast(`"${node.name}" dihapus permanen`);
-    } catch (e: any) {
-      triggerToast(e.message || "Gagal menghapus file");
-    }
+  function handlePurge(node: NodeDto) {
+    setConfirmState({
+      isOpen: true,
+      title: "Hapus Permanen",
+      message: `Hapus permanen "${node.name}"? Aksi ini tidak dapat dibatalkan.`,
+      confirmText: "Hapus Permanen",
+      variant: "danger",
+      onConfirm: async () => {
+        setConfirmState(null);
+        try {
+          await api.purge(node.id);
+          invalidate();
+          triggerToast(`"${node.name}" dihapus permanen`);
+        } catch (e: any) {
+          triggerToast(e.message || "Gagal menghapus file");
+        }
+      },
+    });
   }
 
   function handleCopyHostname() {
@@ -624,21 +688,36 @@ export default function Files({
                   )}
                 </div>
 
-                <div className="view-toggle">
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <button
-                    className={`toggle-btn ${viewMode === "list" ? "active" : ""}`}
-                    onClick={() => setViewMode("list")}
-                    title="Tampilan Tabel"
+                    className={`select-mode-toggle-btn ${isSelectMode ? "active" : ""}`}
+                    onClick={() => {
+                      const next = !isSelectMode;
+                      setIsSelectMode(next);
+                      if (!next) setSelectedIds(new Set());
+                    }}
+                    title={isSelectMode ? "Selesai memilih" : "Pilih banyak file"}
                   >
-                    <ListIcon size={16} />
+                    <CheckSquare size={15} />
+                    <span>{isSelectMode ? "Selesai" : "Pilih"}</span>
                   </button>
-                  <button
-                    className={`toggle-btn ${viewMode === "grid" ? "active" : ""}`}
-                    onClick={() => setViewMode("grid")}
-                    title="Tampilan Grid"
-                  >
-                    <LayoutGrid size={16} />
-                  </button>
+
+                  <div className="view-toggle">
+                    <button
+                      className={`toggle-btn ${viewMode === "list" ? "active" : ""}`}
+                      onClick={() => setViewMode("list")}
+                      title="Tampilan Tabel"
+                    >
+                      <ListIcon size={16} />
+                    </button>
+                    <button
+                      className={`toggle-btn ${viewMode === "grid" ? "active" : ""}`}
+                      onClick={() => setViewMode("grid")}
+                      title="Tampilan Grid"
+                    >
+                      <LayoutGrid size={16} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -647,15 +726,17 @@ export default function Files({
                   <table className="file-table">
                     <thead>
                       <tr>
-                        <th className="th-check">
-                          <input
-                            type="checkbox"
-                            className="custom-checkbox"
-                            checked={isAllSelected}
-                            onChange={toggleSelectAll}
-                            title={isAllSelected ? "Lepas semua" : "Pilih semua"}
-                          />
-                        </th>
+                        {(isSelectMode || selectedIds.size > 0) && (
+                          <th className="th-check">
+                            <input
+                              type="checkbox"
+                              className="custom-checkbox"
+                              checked={isAllSelected}
+                              onChange={toggleSelectAll}
+                              title={isAllSelected ? "Lepas semua" : "Pilih semua"}
+                            />
+                          </th>
+                        )}
                         <th className="th-name">Nama</th>
                         <th className="th-size">Ukuran</th>
                         <th className="th-date">Tanggal Dibuat</th>
@@ -671,17 +752,19 @@ export default function Files({
                             key={n.id}
                             className={`file-row ${isSelected ? "selected" : ""}`}
                           >
-                            <td className="td-check">
-                              <input
-                                type="checkbox"
-                                className="custom-checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  e.stopPropagation();
-                                  toggleSelect(n.id);
-                                }}
-                              />
-                            </td>
+                            {(isSelectMode || selectedIds.size > 0) && (
+                              <td className="td-check">
+                                <input
+                                  type="checkbox"
+                                  className="custom-checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    e.stopPropagation();
+                                    toggleSelect(n.id);
+                                  }}
+                                />
+                              </td>
+                            )}
                             <td className="td-name">
                               <div
                                 className="name-cell"
@@ -790,17 +873,19 @@ export default function Files({
                           else setPreviewNode(n);
                         }}
                       >
-                        <div
-                          className="card-check-box"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <input
-                            type="checkbox"
-                            className="custom-checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSelect(n.id)}
-                          />
-                        </div>
+                        {(isSelectMode || selectedIds.size > 0) && (
+                          <div
+                            className="card-check-box"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              className="custom-checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelect(n.id)}
+                            />
+                          </div>
+                        )}
                         <div className="card-preview">
                           <Icon size={32} strokeWidth={1.5} className={color} />
                         </div>
@@ -1142,6 +1227,30 @@ export default function Files({
         {/* Preview Modal */}
         {previewNode && (
           <PreviewModal node={previewNode} onClose={() => setPreviewNode(null)} />
+        )}
+
+        {/* Custom Confirmation Modal */}
+        {confirmState && (
+          <ConfirmModal
+            isOpen={confirmState.isOpen}
+            title={confirmState.title}
+            message={confirmState.message}
+            confirmText={confirmState.confirmText}
+            variant={confirmState.variant}
+            onConfirm={confirmState.onConfirm}
+            onCancel={() => setConfirmState(null)}
+          />
+        )}
+
+        {/* Custom Prompt Modal (Rename) */}
+        {promptState && (
+          <PromptModal
+            isOpen={promptState.isOpen}
+            title={promptState.title}
+            initialValue={promptState.initialValue}
+            onConfirm={promptState.onConfirm}
+            onCancel={() => setPromptState(null)}
+          />
         )}
 
         {/* Toast Alert */}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Folder,
   FileText,
@@ -33,7 +33,8 @@ import {
 } from "lucide-react";
 import PreviewModal from "../components/PreviewModal";
 import Sidebar from "../components/Sidebar";
-import { api, contentUrl, uploadFile, type UploadProgress } from "../api";
+import { useUploadManager } from "../context/UploadContext";
+import { api, contentUrl } from "../api";
 import type { NodeDto } from "@nas/shared";
 
 function fmtSize(n: number): string {
@@ -56,10 +57,6 @@ function getFileIcon(n: NodeDto) {
   if (top === "audio") return { icon: Music, color: "text-pink" };
   if (top === "application") return { icon: Package, color: "text-iron" };
   return { icon: FileText, color: "text-muted" };
-}
-
-interface UploadItem extends UploadProgress {
-  uploadId?: string;
 }
 
 // Donut Chart Component
@@ -111,7 +108,7 @@ export default function Files({
   const qc = useQueryClient();
 
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
-  const [uploads, setUploads] = useState<Record<string, UploadItem>>({});
+  const { startUploads } = useUploadManager();
   const [previewNode, setPreviewNode] = useState<NodeDto | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -216,31 +213,10 @@ export default function Files({
     };
   }, [trash, search, folderId]);
 
-  const upMut = useMutation({
-    mutationFn: async (file: File) => {
-      const key = `${file.name}:${file.size}:${file.lastModified}`;
-      setUploads((s) => ({
-        ...s,
-        [key]: { file, uploadedBytes: 0, totalBytes: file.size, state: "hashing" },
-      }));
-      try {
-        await uploadFile(file, folderId ?? null, (p) => {
-          setUploads((s) => ({ ...s, [key]: { ...p, uploadId: s[key]?.uploadId } }));
-        });
-        invalidate();
-      } catch (e: any) {
-        setUploads((s) => ({
-          ...s,
-          [key]: { ...s[key]!, state: "error", error: e.message },
-        }));
-      }
-    },
-  });
-
   function addFiles(files: FileList | File[]) {
-    for (const f of Array.from(files)) {
-      upMut.mutate(f);
-    }
+    const arr = Array.from(files);
+    startUploads(arr, folderId ?? null);
+    triggerToast(`Memulai unggah ${arr.length} file di latar belakang...`);
   }
 
   function triggerToast(msg: string) {
@@ -1036,40 +1012,7 @@ export default function Files({
           </div>
         )}
 
-        {/* Floating Upload Tray */}
-        {Object.keys(uploads).length > 0 && (
-          <div className="upload-tray">
-            <div className="upload-tray-head">
-              <span>Mengunggah File ({Object.keys(uploads).length})</span>
-            </div>
-            <div className="upload-tray-body">
-              {Object.entries(uploads).map(([key, u]) => {
-                const pct = u.totalBytes ? Math.round((u.uploadedBytes / u.totalBytes) * 100) : 0;
-                return (
-                  <div key={key} className="upload-tray-item">
-                    <div className="item-line">
-                      <span className="item-name" title={u.file.name}>
-                        {u.file.name}
-                      </span>
-                      <span className={`item-status ${u.state}`}>
-                        {u.state === "hashing" && "Hashing..."}
-                        {u.state === "uploading" && `${pct}%`}
-                        {u.state === "done" && "Selesai"}
-                        {u.state === "error" && "Gagal"}
-                      </span>
-                    </div>
-                    <div className="item-bar">
-                      <div
-                        className={`item-fill ${u.state}`}
-                        style={{ width: u.state === "done" ? "100%" : `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+
 
         {/* Create Folder Modal */}
         {folderModalOpen && (

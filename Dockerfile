@@ -17,6 +17,7 @@ FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /out /app
+COPY --from=build /app/apps/api/db /app/db
 COPY --from=build /app/apps/web/dist /app/web-dist
 EXPOSE 3001
 CMD ["node", "dist/index.js"]

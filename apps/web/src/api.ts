@@ -21,17 +21,17 @@ async function j<T>(res: Response): Promise<T> {
 
 export const api = {
   me: () => fetch("/api/auth/me").then((r) => (r.ok ? j<SessionUser>(r) : Promise.reject(new Error("unauth")))),
-  register: (email: string, password: string) =>
+  register: (email: string, password: string, rememberMe = true) =>
     fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     }).then((r) => j<SessionUser>(r)),
-  login: (email: string, password: string) =>
+  login: (email: string, password: string, rememberMe = true) =>
     fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     }).then((r) => j<SessionUser>(r)),
   logout: () => fetch("/api/auth/logout", { method: "POST" }),
 

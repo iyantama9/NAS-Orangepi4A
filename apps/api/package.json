@@ -11,12 +11,14 @@
   "dependencies": {
     "@nas/shared": "workspace:*",
     "@node-rs/argon2": "^2.0.2",
+    "compression": "^1.8.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.4.5",
     "express": "^5.0.3",
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.8",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",

@@ -1,6 +1,4 @@
-// Runner migrasi kecil: jalankan file .sql di db/migrations secara urut,
-// catat yang sudah jalan di tabel schema_migrations.
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pool } from "./db.js";
@@ -8,13 +6,16 @@ import { pool } from "./db.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const migrationsDir = join(here, "..", "db", "migrations");
 
-async function main() {
+export async function runMigrations() {
   await pool.query(
     `CREATE TABLE IF NOT EXISTS schema_migrations (
        name TEXT PRIMARY KEY,
        applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
      )`
   );
+  if (!existsSync(migrationsDir)) {
+    return;
+  }
   const files = readdirSync(migrationsDir)
     .filter((f) => f.endsWith(".sql"))
     .sort();
@@ -36,7 +37,7 @@ async function main() {
         [f]
       );
       await client.query("COMMIT");
-      console.log("applied:", f);
+      console.log("[migrate] applied:", f);
     } catch (e) {
       await client.query("ROLLBACK");
       throw e;
@@ -46,9 +47,13 @@ async function main() {
   }
 }
 
-main()
-  .then(() => pool.end())
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  });
+// Auto-run if executed directly
+if (process.argv[1] && process.argv[1].includes("migrate")) {
+  runMigrations()
+    .then(() => pool.end())
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
+}
+

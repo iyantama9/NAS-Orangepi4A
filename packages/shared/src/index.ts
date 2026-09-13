@@ -55,11 +55,13 @@ export interface ShareDto {
 export const registerSchema = z.object({
   email: z.string().email().max(200),
   password: z.string().min(8).max(200),
+  rememberMe: z.boolean().optional(),
 });
 
 export const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1),
+  rememberMe: z.boolean().optional(),
 });
 
 export interface SystemInfo {

@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import compression from "compression";
 import path from "node:path";
 import fs from "node:fs";
 import { authRouter } from "./auth.js";
@@ -11,10 +12,12 @@ import { query } from "./db.js";
 import { requireUser } from "./auth.js";
 import { startJobs } from "./jobs.js";
 import { systemRouter } from "./system.js";
+import { runMigrations } from "./migrate.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3001);
 
+app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
@@ -46,15 +49,39 @@ app.use(publicShareRouter); // /s/:token[/meta] publik
 // ---- Serve web build statis di produksi ----
 const webDist = process.env.WEB_DIST ?? path.join(process.cwd(), "web-dist");
 if (fs.existsSync(webDist)) {
-  app.use(express.static(webDist));
+  // Static assets Vite (hashed filenames) diberi caching 1 tahun
+  app.use("/assets", express.static(path.join(webDist, "assets"), {
+    maxAge: "1y",
+    immutable: true,
+  }));
+  app.use(express.static(webDist, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith(".html")) {
+        res.setHeader("Cache-Control", "no-cache");
+      }
+    },
+  }));
   // SPA fallback untuk route non-API/non-assets.
-  app.get(/^(?!\/api\/|\/s\/|\/assets\/).*/, (req, res) => {
+  app.get(/^(?!\/api\/|\/s\/|\/assets\/).*/, (_req, res) => {
+    res.setHeader("Cache-Control", "no-cache");
     res.sendFile(path.join(webDist, "index.html"));
   });
 }
 
-startJobs();
+// Jalankan auto migrasi & jobs
+runMigrations()
+  .then(() => {
+    startJobs();
+    app.listen(PORT, () => {
+      console.log(`nas api listening on :${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to run migrations on startup:", err);
+    // Still start server so health check can respond if DB is temporarily recovering
+    startJobs();
+    app.listen(PORT, () => {
+      console.log(`nas api listening on :${PORT} (without migrations)`);
+    });
+  });
 
-app.listen(PORT, () => {
-  console.log(`nas api listening on :${PORT}`);
-});

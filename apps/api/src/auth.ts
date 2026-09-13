@@ -13,11 +13,13 @@ declare global {
   }
 }
 
-const SESSION_TTL_DAYS = 30;
+const SESSION_LONG_DAYS = 30;
+const SESSION_SHORT_DAYS = 1;
 
-export async function createSession(userId: string): Promise<{ token: string; expires: Date }> {
+export async function createSession(userId: string, rememberMe = true): Promise<{ token: string; expires: Date }> {
   const token = randomBytes(32).toString("base64url");
-  const expires = new Date(Date.now() + SESSION_TTL_DAYS * 86400_000);
+  const ttlDays = rememberMe ? SESSION_LONG_DAYS : SESSION_SHORT_DAYS;
+  const expires = new Date(Date.now() + ttlDays * 86400_000);
   await query(
     "INSERT INTO sessions(id, user_id, expires_at) VALUES ($1,$2,$3)",
     [token, userId, expires]
@@ -43,12 +45,12 @@ export async function requireUser(
   next();
 }
 
-function setSessionCookie(res: Response, token: string, expires: Date) {
+function setSessionCookie(res: Response, token: string, expires: Date, rememberMe = true) {
   res.cookie("nas_session", token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // via Tailscale HTTP; naikkan ke true kalau nanti pakai HTTPS
-    expires,
+    secure: false, // via Tailscale / Cloudflare Tunnel edge terminating SSL
+    ...(rememberMe ? { expires } : {}),
   });
 }
 
@@ -56,34 +58,34 @@ export const authRouter = Router();
 
 authRouter.post("/register", async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "invalid input" });
-  const { email, password } = parsed.data;
+  if (!parsed.success) return res.status(400).json({ error: "Format input tidak valid (password min 8 karakter)" });
+  const { email, password, rememberMe = true } = parsed.data;
   const exists = await query("SELECT 1 FROM users WHERE email = $1", [email]);
-  if (exists.rowCount) return res.status(409).json({ error: "email sudah terdaftar" });
+  if (exists.rowCount) return res.status(409).json({ error: "Email sudah terdaftar" });
   const passwordHash = await hash(password);
   const r = await query<{ id: string }>(
     "INSERT INTO users(email, password_hash) VALUES ($1,$2) RETURNING id",
     [email, passwordHash]
   );
-  const { token, expires } = await createSession(r.rows[0].id);
-  setSessionCookie(res, token, expires);
+  const { token, expires } = await createSession(r.rows[0].id, rememberMe);
+  setSessionCookie(res, token, expires, rememberMe);
   res.json({ id: r.rows[0].id, email });
 });
 
 authRouter.post("/login", async (req, res) => {
   const parsed = loginSchema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "invalid input" });
-  const { email, password } = parsed.data;
+  if (!parsed.success) return res.status(400).json({ error: "Email dan password wajib diisi" });
+  const { email, password, rememberMe = true } = parsed.data;
   const r = await query<{ id: string; password_hash: string }>(
     "SELECT id, password_hash FROM users WHERE email = $1",
     [email]
   );
   const row = r.rows[0];
   if (!row || !(await verify(row.password_hash, password))) {
-    return res.status(401).json({ error: "email atau password salah" });
+    return res.status(401).json({ error: "Email atau password salah" });
   }
-  const { token, expires } = await createSession(row.id);
-  setSessionCookie(res, token, expires);
+  const { token, expires } = await createSession(row.id, rememberMe);
+  setSessionCookie(res, token, expires, rememberMe);
   res.json({ id: row.id, email });
 });
 

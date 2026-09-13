@@ -111,6 +111,25 @@ html, body, #root {
   padding-bottom: 20px;
 }
 
+.sidebar-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.btn-sidebar-close-mobile {
+  display: none;
+}
+
+.sidebar-backdrop {
+  display: none;
+}
+
+.mobile-header-bar {
+  display: none;
+}
+
 .sidebar-brand {
   display: flex;
   align-items: center;
@@ -1827,4 +1846,333 @@ html, body, #root {
   color: var(--amber);
   flex-shrink: 0;
 }
+
+/* =========================================================
+   Mobile & Tablet Responsive Optimizations
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Layout & Sidebar off-canvas drawer */
+  .app-layout {
+    flex-direction: column;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99;
+    animation: fadeInBackdrop 0.2s ease;
+  }
+
+  @keyframes fadeInBackdrop {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    max-width: 82vw;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 0 45px rgba(0, 0, 0, 0.85);
+    padding: 20px 16px;
+    overflow-y: auto;
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .btn-sidebar-close-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-xs);
+    background: var(--bg-app);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-sidebar-close-mobile:hover {
+    color: var(--text-primary);
+    border-color: var(--border-strong);
+  }
+
+  /* Mobile Sticky Top Header */
+  .mobile-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    width: 100%;
+    backdrop-filter: blur(8px);
+  }
+
+  .btn-mobile-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-app);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .btn-mobile-menu:hover, .btn-mobile-menu:active {
+    background: var(--bg-elevated);
+    border-color: var(--amber);
+    color: var(--amber);
+  }
+
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .mobile-logo-emoji {
+    font-size: 20px;
+  }
+
+  .mobile-brand-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+  }
+
+  .mobile-avatar-badge {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: #000;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(249, 115, 22, 0.35);
+  }
+
+  /* Main content resets */
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 18px 16px 90px 16px !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* Top Bar & Greeting */
+  .dashboard-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .dashboard-greeting h1 {
+    font-size: 22px;
+  }
+
+  .breadcrumbs-bar {
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 13px;
+  }
+
+  .dashboard-actions-right {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .search-input-box {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 1 100%;
+  }
+
+  .btn-header-action {
+    flex: 1;
+    min-width: 110px;
+    justify-content: center;
+    height: 38px;
+  }
+
+  /* Summary Cards Stack */
+  .dashboard-summary-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .card-storage-donut {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .donut-legend {
+    width: 100%;
+  }
+
+  .legend-item-row {
+    justify-content: space-between;
+  }
+
+  /* File controls & Table */
+  .file-view-controls {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .file-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-sm);
+  }
+
+  .file-table {
+    min-width: 520px;
+  }
+
+  .name-text {
+    max-width: 220px;
+  }
+
+  .file-grid {
+    grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)) !important;
+    gap: 12px;
+  }
+
+  /* Floating Batch Bar */
+  .floating-batch-bar {
+    width: calc(100vw - 24px);
+    max-width: 440px;
+    bottom: 14px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+    border-radius: 16px;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .batch-actions-list {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-batch {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  /* Modals */
+  .modal-dialog, .modal {
+    width: 92vw !important;
+    max-width: 420px !important;
+    margin: auto !important;
+    padding: 20px 16px !important;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .modal-body {
+    padding: 16px 12px;
+  }
+
+  .modal-footer {
+    padding: 12px 14px;
+  }
+
+  /* Auth / Login */
+  .auth-wrap {
+    padding: 16px;
+  }
+
+  .auth-card {
+    width: 100% !important;
+    max-width: 380px !important;
+    padding: 24px 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-table {
+    min-width: 100%;
+  }
+
+  /* Hide date on tiny screens to avoid awkward wrapping */
+  .th-date, .td-date {
+    display: none;
+  }
+
+  .th-size, .td-size {
+    width: 80px;
+    text-align: right;
+  }
+
+  .name-text {
+    max-width: 140px;
+  }
+
+  .btn-header-action span {
+    font-size: 12px;
+  }
+
+  .file-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .floating-batch-bar {
+    bottom: 10px;
+    padding: 6px 10px;
+  }
+
+  .batch-count-badge {
+    font-size: 12px;
+  }
+}
+
 

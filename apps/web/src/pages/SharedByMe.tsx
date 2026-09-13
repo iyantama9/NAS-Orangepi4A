@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Trash2,
   Folder,
+  Menu,
 } from "lucide-react";
 import { api } from "../api";
 import Sidebar from "../components/Sidebar";
@@ -19,6 +20,7 @@ export default function SharedByMe() {
   const qc = useQueryClient();
   const [toast, setToast] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const me = useQuery({ queryKey: ["me"], queryFn: api.me, retry: false });
   useEffect(() => {
@@ -77,6 +79,8 @@ export default function SharedByMe() {
         userEmail={me.data.email}
         storageUsed={storageUsedGb}
         storageTotal={storageTotalGb}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
         onLogout={async () => {
           await api.logout();
           nav("/login");
@@ -84,6 +88,24 @@ export default function SharedByMe() {
       />
 
       <main className="main-content">
+        {/* Mobile Top Header Bar */}
+        <div className="mobile-header-bar">
+          <button
+            className="btn-mobile-menu"
+            onClick={() => setMobileMenuOpen(true)}
+            title="Buka menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="mobile-brand" onClick={() => nav("/")}>
+            <span className="mobile-logo-emoji">🍊</span>
+            <span className="mobile-brand-title">NAS Pi</span>
+          </div>
+          <div className="mobile-avatar-badge" onClick={() => setMobileMenuOpen(true)}>
+            {userLabel.charAt(0).toUpperCase()}
+          </div>
+        </div>
+
         {/* Top Header */}
         <header className="dashboard-top-bar">
           <div className="dashboard-greeting">

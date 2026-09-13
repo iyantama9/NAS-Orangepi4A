@@ -24,6 +24,7 @@ import {
   CloudUpload,
   Share2,
   FolderInput,
+  Menu,
   Monitor,
   Box,
   Clock,
@@ -127,6 +128,7 @@ export default function Files({
   // Move Modal State
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [targetFolderId, setTargetFolderId] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -468,6 +470,8 @@ export default function Files({
         userEmail={me.data.email}
         storageUsed={storageUsedGb}
         storageTotal={storageTotalGb}
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
         onLogout={async () => {
           await api.logout();
           nav("/login");
@@ -476,6 +480,24 @@ export default function Files({
 
       {/* Main Content Area */}
       <main className="main-content">
+        {/* Mobile Top Header Bar */}
+        <div className="mobile-header-bar">
+          <button
+            className="btn-mobile-menu"
+            onClick={() => setMobileMenuOpen(true)}
+            title="Buka menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="mobile-brand" onClick={() => nav("/")}>
+            <span className="mobile-logo-emoji">🍊</span>
+            <span className="mobile-brand-title">NAS Pi</span>
+          </div>
+          <div className="mobile-avatar-badge" onClick={() => setMobileMenuOpen(true)}>
+            {userLabel.charAt(0).toUpperCase()}
+          </div>
+        </div>
+
         {/* Hidden File Input */}
         <input
           ref={fileInput}

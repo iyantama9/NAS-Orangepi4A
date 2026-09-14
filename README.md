@@ -1,85 +1,88 @@
-# NAS Orange Pi 4A
+<p align="center">
+  <img src="docs/assets/nas-hero.svg" alt="NAS Orange Pi 4A storage control plane" width="100%" />
+</p>
+
+<h1 align="center">NAS Orange Pi 4A</h1>
 
 <p align="center">
-  <img src="docs/assets/nas-hero.svg" alt="NAS Orange Pi 4A, private storage for Orange Pi" width="100%" />
+  A personal file workspace with verified resumable uploads, content deduplication, previews, recovery, and controlled sharing.
 </p>
 
 <p align="center">
-  <strong>A self-hosted file workspace with resumable verified uploads, content deduplication, previews, sharing, and responsive controls.</strong>
+  <a href="DOCUMENTATION.md">Documentation</a> ·
+  <a href="docs/ARCHITECTURE.md">Architecture</a> ·
+  <a href="docs/API_REFERENCE.md">API</a> ·
+  <a href="docs/OPERATIONS.md">Operations</a> ·
+  <a href="docs/SECURITY.md">Security</a>
 </p>
 
-<p align="center">
-  <img alt="Node.js 22" src="https://img.shields.io/badge/Node.js-22-5FA04E?logo=nodedotjs&logoColor=white">
-  <img alt="React 19" src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111">
-  <img alt="Express 5" src="https://img.shields.io/badge/Express-5-222?logo=express&logoColor=white">
-  <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="Docker Compose" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
-  <img alt="License not granted" src="https://img.shields.io/badge/license-no_public_license-555">
-</p>
+> [!IMPORTANT]
+> This is a personal NAS. Registration is closed by default. A fresh installation can temporarily enable owner bootstrap, and the backend accepts only the first account. Once an owner exists, further registration is rejected even if the bootstrap flag remains enabled.
 
-> [!CAUTION]
-> This service stores private files and can publish bearer-token share links. The current session cookie is configured with `secure: false`, and public registration has no rate limit or invitation gate. Complete the hardening steps in [Security](docs/SECURITY.md) before exposing the service to the internet.
+## Overview
 
-NAS Orange Pi 4A is a compact React and Express storage platform designed for an Orange Pi or another Linux host. Files are split into verified content-addressed chunks, which allows interrupted uploads to resume and identical data to be reused. PostgreSQL stores users, file trees, chunk references, upload sessions, shares, and sessions while the file payload stays on mounted storage.
+NAS Orange Pi 4A combines a responsive React workspace, an Express API, PostgreSQL metadata, and content-addressed file storage. The browser uploads verified chunks that can resume after interruption. The server assembles logical files from ordered hashes, streams full or partial content, manages trash and cleanup, and creates revocable public links when the owner chooses to share something.
 
-[Documentation index](DOCUMENTATION.md) | [Architecture](docs/ARCHITECTURE.md) | [API reference](docs/API_REFERENCE.md) | [Operations](docs/OPERATIONS.md) | [Security](docs/SECURITY.md)
+The production image serves the web application and API from one origin. Docker Compose mounts PostgreSQL and file data on the host so application images can be replaced without moving stored content.
 
-## Capabilities
+## Core capabilities
 
-| Area | Capability |
+| Workspace | What it does |
 | --- | --- |
-| File workspace | Folders, rename, move, search, multi-select, trash, restore, and permanent purge |
-| Reliable upload | 8 MiB chunks, browser SHA-256, resumable sessions, concurrent transfer, and progress |
-| Efficient storage | Content-addressed chunks and deduplication across file versions |
-| Delivery | Full downloads, HTTP Range, media preview, and cache-aware static serving |
-| Sharing | Revocable public links with optional expiration and preview or download |
-| Operations | Health endpoint, system information, schema migrations, trash cleanup, and orphan collection |
-| Interface | Responsive desktop layout, mobile drawer, breadcrumbs, upload manager, and media studio |
+| Files and folders | Browse, create folders, search, rename, move, multi-select, trash, restore, and purge |
+| Reliable upload | Splits files into 8 MiB chunks, verifies SHA-256, resumes sessions, and reports live progress |
+| Efficient storage | Reuses identical content-addressed chunks across logical files |
+| Delivery | Streams downloads and previews with `GET`, `HEAD`, and HTTP Range support |
+| Sharing | Creates random bearer-token links with optional expiration and explicit revocation |
+| Operations | Reports service and system state, migrates schema, purges retained trash, and collects orphan chunks |
+| Responsive UI | Supports desktop navigation, mobile drawer, breadcrumbs, background upload, and media preview |
 
-## How a file is stored
+## Storage lifecycle
 
 ```mermaid
 flowchart TD
-    A[Select files in browser] --> B[Create upload session]
-    B --> C[Split file into 8 MiB chunks]
-    C --> D[Hash chunk with SHA-256]
-    D --> E{Chunk already present?}
-    E -->|Yes| F[Reuse stored chunk]
-    E -->|No| G[Upload chunk]
-    G --> H[Verify length and hash]
-    H --> I[Write content-addressed chunk]
-    F --> J{More chunks?}
-    I --> J
-    J -->|Yes| D
-    J -->|No| K[Complete upload session]
-    K --> L[Create file node and ordered chunk map]
-    L --> M[Preview, download, move, share, or trash]
+    A[Owner selects a file] --> B[Create upload session]
+    B --> C[Split into 8 MiB chunks]
+    C --> D[Calculate SHA-256]
+    D --> E{Chunk already stored?}
+    E -->|yes| F[Reuse existing content]
+    E -->|no| G[Upload and verify]
+    F --> H{More chunks?}
+    G --> H
+    H -->|yes| D
+    H -->|no| I[Complete session]
+    I --> J[Create logical file and chunk order]
+    J --> K[Preview, download, move, share, or trash]
 ```
 
-The database never contains the file bytes. It maps a logical file node to ordered chunk hashes. The data volume stores each unique verified chunk once.
+PostgreSQL stores ownership, hierarchy, file metadata, chunk order, sessions, and shares. `/opt/nas/data` stores the actual chunk payload. Both must be backed up and restored as one consistency set.
 
-## Workspace layout
+## Personal owner access
 
-```text
-apps/
-  api/                    Express API, auth, storage, migrations, and jobs
-  web/                    React application and upload manager
-packages/
-  shared/                 Shared TypeScript contracts and validation
-infra/
-  deploy.sh               Orange Pi deployment helper
-docker-compose.yml        PostgreSQL, application, and optional tunnel
-Dockerfile                Multi-stage production image
-docs/                     Architecture, API, operations, and security
+Normal configuration keeps registration disabled:
+
+```env
+NAS_ALLOW_OWNER_BOOTSTRAP=false
 ```
+
+For a new empty database only:
+
+1. Set `NAS_ALLOW_OWNER_BOOTSTRAP=true` in `.env`.
+2. Restart the API container.
+3. Open the login page and select **Aktivasi Pemilik**.
+4. Create the single owner account.
+5. Return the flag to `false` and restart the API.
+
+The API serializes owner creation with a PostgreSQL advisory transaction lock. If an account already exists, `POST /api/auth/register` returns `403` regardless of the email address. The web interface hides owner activation when bootstrap is disabled or an owner exists.
 
 ## Quick start
 
 ### Requirements
 
-- Docker Engine with Docker Compose, or Node.js 22 and pnpm 12 for development
-- A writable storage path
-- PostgreSQL 17 when running outside Compose
+- a maintained 64-bit Linux host;
+- Docker Engine and Docker Compose;
+- reliable storage mounted for PostgreSQL and file data;
+- a completed `.env` based on `.env.example`.
 
 ```bash
 cp .env.example .env
@@ -87,11 +90,76 @@ docker compose up -d --build
 curl --fail http://localhost:3001/api/health
 ```
 
-The Compose deployment persists PostgreSQL at `/opt/nas/db` and file chunks at `/opt/nas/data`. Create those paths with restrictive ownership before the first start.
+Open `http://localhost:3001`. For an empty installation, follow the owner bootstrap procedure above before returning the service to its closed registration mode.
 
-Open `http://localhost:3001`. The Express service serves the built React application and the API from one origin.
+## Browser routes
 
-## Development
+| Route | Purpose |
+| --- | --- |
+| `/` and `/files` | Root workspace |
+| `/f/:folderId` | Folder contents |
+| `/search` | Owner file search |
+| `/trash` | Restore or permanently purge trashed items |
+| `/shared` | Review and revoke owned share links |
+| `/s/:token` | Public shared content |
+
+## API groups
+
+| Group | Base path | Access |
+| --- | --- | --- |
+| Authentication | `/api/auth` | Public login, conditional owner bootstrap, authenticated logout and identity |
+| Nodes | `/api/nodes` | Owner session |
+| Uploads | `/api/uploads` | Owner session |
+| Shares | `/api/shares` | Owner session |
+| System | `/api/system` | Owner session |
+| Public share | `/s/:token` | Valid share token |
+| Health | `/api/health` | Public health route |
+
+Request methods, content headers, status behavior, and upload sequencing are documented in the [API reference](docs/API_REFERENCE.md).
+
+## Deployment layout
+
+```text
+Browser
+   |
+HTTPS or private network
+   |
+Express API + React build :3001
+   |                    |
+PostgreSQL metadata     /opt/nas/data chunks
+```
+
+Compose includes an optional Cloudflare Tunnel profile. Tailscale can provide private SSH and operator access. A tunnel protects transport but does not replace application authorization, registration control, backup, or host hardening.
+
+## Data protection
+
+- passwords are hashed with Argon2;
+- production cookies use `HttpOnly`, `Secure`, and `SameSite=Lax`;
+- session and share tokens use random 32-byte values;
+- node operations verify ownership;
+- chunk writes verify declared length and SHA-256;
+- share links can expire or be revoked;
+- permanent purge remains separate from trash.
+
+Public share tokens are credentials. Anyone holding a valid link can access its target until expiration or revocation.
+
+## Backup and recovery
+
+Capture PostgreSQL and `/opt/nas/data` together. A database-only backup can reference missing chunks. A data-only backup loses file names, hierarchy, owners, ordering, and shares. Detailed backup, restore, validation, and incident procedures are in [Operations](docs/OPERATIONS.md).
+
+## Repository map
+
+```text
+apps/api/src/              Express routes, auth, storage, migrations, and jobs
+apps/web/src/              React workspace and upload manager
+packages/shared/src/       Shared validation and TypeScript contracts
+infra/deploy.sh            Orange Pi deployment helper
+docs/                      Architecture, API, operations, and security
+docker-compose.yml         PostgreSQL, API, storage mounts, and optional tunnel
+Dockerfile                 Multi-stage production image
+```
+
+## Development and validation
 
 ```bash
 corepack enable
@@ -99,51 +167,14 @@ pnpm install
 pnpm -r build
 ```
 
-Run the package scripts defined in the workspace for local API and web development. The shared package must build before dependent packages.
+The repository does not yet define a complete automated integration suite. Release verification should cover login, closed registration, first-owner concurrency, upload interruption and resume, hash rejection, Range download, share expiration, trash restore, purge, and backup restoration.
 
-## Main routes
+## Documentation
 
-| Browser route | Purpose |
-| --- | --- |
-| `/` and `/files` | Root file workspace |
-| `/f/:folderId` | Folder contents |
-| `/search` | File and folder search |
-| `/trash` | Restore or permanently purge items |
-| `/shared` | Manage share links |
-| `/s/:token` | Public shared item |
+Start with [DOCUMENTATION.md](DOCUMENTATION.md). It links the complete system design, API contract, owner access policy, operations handbook, storage model, troubleshooting, and security posture.
 
-The API exposes authentication, node management, chunk upload, downloads with Range support, public shares, system information, and health. See the complete [API reference](docs/API_REFERENCE.md).
+## Credits and license
 
-## Storage and cleanup
+Built with Node.js, TypeScript, React, React Router, TanStack Query, Vite, Express, PostgreSQL, node-postgres, Argon2, Zod, Lucide, Docker, Cloudflare Tunnel, and Tailscale. Project names and trademarks belong to their respective owners.
 
-Deleting an item moves its node tree to trash. Purging removes the logical nodes. Background maintenance clears expired trash and removes chunks that no file or active upload references. Back up PostgreSQL and the data volume together so their references remain consistent.
-
-## Deployment
-
-The included `infra/deploy.sh` packages the repository, copies it to the Orange Pi through SSH, starts Compose, and applies migrations. Its default host and remote path are environment-specific examples. Override them rather than copying another deployment address into a new environment.
-
-The optional `tunnel` Compose profile starts Cloudflare Tunnel when `CLOUDFLARE_TUNNEL_TOKEN` is set:
-
-```bash
-docker compose --profile tunnel up -d --build
-```
-
-Before public deployment, enable secure cookies in HTTPS, restrict registration, add authentication rate limiting, and review public share retention.
-
-## Validation
-
-The repository does not currently define an automated test suite. The primary deterministic check is:
-
-```bash
-pnpm -r build
-```
-
-For release verification, also test registration policy, login and logout, upload interruption and resume, hash rejection, Range download, share expiration, trash restore, purge, and backup restoration on a non-production instance.
-
-## Credits
-
-NAS Orange Pi 4A is built with [Node.js](https://nodejs.org/), [TypeScript](https://www.typescriptlang.org/), [React](https://react.dev/), [React Router](https://reactrouter.com/), [TanStack Query](https://tanstack.com/query), [Vite](https://vite.dev/), [Express](https://expressjs.com/), [PostgreSQL](https://www.postgresql.org/), [node-postgres](https://node-postgres.com/), [Argon2](https://github.com/P-H-C/phc-winner-argon2), [Zod](https://zod.dev/), [Lucide](https://lucide.dev/), [Docker](https://www.docker.com/), [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/), and [Tailscale](https://tailscale.com/).
-
-## License
-
-No public license is currently included. Copyright remains with the repository owner. Source availability alone does not grant rights to copy, modify, redistribute, host, or create derivative works.
+No public license is included. Source availability does not grant permission to copy, modify, redistribute, host, or create derivative works.

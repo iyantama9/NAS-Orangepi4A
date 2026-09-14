@@ -21,6 +21,10 @@ async function j<T>(res: Response): Promise<T> {
 
 export const api = {
   me: () => fetch("/api/auth/me").then((r) => (r.ok ? j<SessionUser>(r) : Promise.reject(new Error("unauth")))),
+  registrationStatus: () =>
+    fetch("/api/auth/registration-status").then((r) =>
+      j<{ available: boolean }>(r)
+    ),
   register: (email: string, password: string, rememberMe = true) =>
     fetch("/api/auth/register", {
       method: "POST",

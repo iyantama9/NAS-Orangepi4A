@@ -76,6 +76,8 @@ Compression is disabled for binary content and range responses. Built static ass
 
 Passwords are hashed with Argon2. A random 32-byte base64url session token is stored in PostgreSQL and sent in the `nas_session` cookie. Remembered sessions last 30 days; shorter sessions last one day or the browser session according to the login choice.
 
+Registration is a closed first-owner bootstrap. It requires an explicit environment flag and an empty users table. A PostgreSQL advisory transaction lock serializes competing attempts. Production session cookies use the `Secure` flag in addition to `HttpOnly` and `SameSite=Lax`.
+
 Public share URLs contain a random 32-byte base64url token. Possession of an active token grants access to its target, so share URLs must be handled as credentials. A share can expire or be revoked.
 
 ## Background maintenance

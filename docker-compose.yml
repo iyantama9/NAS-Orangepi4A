@@ -29,6 +29,7 @@ services:
       HOST_OS: "Debian 12 (bookworm)"
       HOST_IP: "192.168.1.14"
       TAILSCALE_IP: "100.82.5.51"
+      NAS_ALLOW_OWNER_BOOTSTRAP: "${NAS_ALLOW_OWNER_BOOTSTRAP:-false}"
     ports:
       - "3001:3001"
     volumes:

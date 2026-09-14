@@ -30,7 +30,7 @@ With the optional tunnel:
 docker compose --profile tunnel up -d --build
 ```
 
-Cloudflare Tunnel provides transport and routing. It does not replace application authorization, secure cookie settings, registration control, backups, or host hardening.
+Cloudflare Tunnel provides transport and routing. It does not replace application authorization, closed owner bootstrap, backups, or host hardening.
 
 ## Device deployment helper
 
@@ -43,7 +43,7 @@ The helper assumes network reachability through the configured SSH path, which c
 After deployment, verify:
 
 1. `/api/health` responds.
-2. Registration behaves according to the intended policy.
+2. Owner bootstrap is unavailable after the first account exists, and direct registration returns `403`.
 3. Login, refresh, and logout work over HTTPS.
 4. A file larger than 8 MiB uploads, pauses, resumes, and downloads with the same checksum.
 5. A Range request returns partial content.

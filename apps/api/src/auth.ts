@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { hash, verify } from "@node-rs/argon2";
 import { loginSchema, registerSchema, type SessionUser } from "@nas/shared";
-import { query } from "./db.js";
+import { pool, query } from "./db.js";
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -49,27 +49,70 @@ function setSessionCookie(res: Response, token: string, expires: Date, rememberM
   res.cookie("nas_session", token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // via Tailscale / Cloudflare Tunnel edge terminating SSL
+    secure: process.env.NODE_ENV === "production",
     ...(rememberMe ? { expires } : {}),
   });
 }
 
 export const authRouter = Router();
 
+const ownerBootstrapEnabled = () =>
+  process.env.NAS_ALLOW_OWNER_BOOTSTRAP?.toLowerCase() === "true";
+
+authRouter.get("/registration-status", async (_req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  if (!ownerBootstrapEnabled()) {
+    return res.json({ available: false });
+  }
+  const existing = await query("SELECT 1 FROM users LIMIT 1");
+  return res.json({ available: !existing.rowCount });
+});
+
 authRouter.post("/register", async (req, res) => {
+  if (!ownerBootstrapEnabled()) {
+    return res.status(403).json({
+      error: "Registrasi ditutup. NAS ini hanya untuk akun pemilik.",
+    });
+  }
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: "Format input tidak valid (password min 8 karakter)" });
   const { email, password, rememberMe = true } = parsed.data;
-  const exists = await query("SELECT 1 FROM users WHERE email = $1", [email]);
-  if (exists.rowCount) return res.status(409).json({ error: "Email sudah terdaftar" });
+  const existingOwner = await query("SELECT 1 FROM users LIMIT 1");
+  if (existingOwner.rowCount) {
+    return res.status(403).json({
+      error: "Registrasi ditutup. Akun pemilik sudah tersedia.",
+    });
+  }
   const passwordHash = await hash(password);
-  const r = await query<{ id: string }>(
-    "INSERT INTO users(email, password_hash) VALUES ($1,$2) RETURNING id",
-    [email, passwordHash]
-  );
-  const { token, expires } = await createSession(r.rows[0].id, rememberMe);
+  const client = await pool.connect();
+  let userId: string;
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtext('nas_owner_bootstrap'))"
+    );
+    const existing = await client.query("SELECT 1 FROM users LIMIT 1");
+    if (existing.rowCount) {
+      await client.query("ROLLBACK");
+      return res.status(403).json({
+        error: "Registrasi ditutup. Akun pemilik sudah tersedia.",
+      });
+    }
+    const created = await client.query<{ id: string }>(
+      "INSERT INTO users(email, password_hash) VALUES ($1,$2) RETURNING id",
+      [email, passwordHash]
+    );
+    userId = created.rows[0].id;
+    await client.query("COMMIT");
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+  const { token, expires } = await createSession(userId, rememberMe);
   setSessionCookie(res, token, expires, rememberMe);
-  res.json({ id: r.rows[0].id, email });
+  res.status(201).json({ id: userId, email });
 });
 
 authRouter.post("/login", async (req, res) => {
@@ -92,7 +135,11 @@ authRouter.post("/login", async (req, res) => {
 authRouter.post("/logout", requireUser, async (req, res) => {
   const token = (req as any).cookies["nas_session"];
   await query("DELETE FROM sessions WHERE id = $1", [token]);
-  res.clearCookie("nas_session");
+  res.clearCookie("nas_session", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
   res.json({ ok: true });
 });
 

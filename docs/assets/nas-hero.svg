@@ -1,58 +1,95 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
-  <title id="title">NAS Orange Pi 4A</title>
-  <desc id="desc">A dark warm storage diagram showing files split into verified chunks and stored on a private Orange Pi server.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="title desc">
+  <title id="title">NAS Orange Pi 4A storage control plane</title>
+  <desc id="desc">A refined dark system map showing an owner device, verified chunks, metadata, private storage, and controlled sharing.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#160d09"/>
-      <stop offset="0.5" stop-color="#151312"/>
-      <stop offset="1" stop-color="#0e1213"/>
+      <stop stop-color="#160d09"/>
+      <stop offset=".55" stop-color="#12110f"/>
+      <stop offset="1" stop-color="#0c1112"/>
     </linearGradient>
-    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#ff8a3d"/>
-      <stop offset="1" stop-color="#ffc45a"/>
+    <linearGradient id="ember" x1="0" y1="0" x2="1" y2="0">
+      <stop stop-color="#ff7f3b"/>
+      <stop offset="1" stop-color="#ffc65b"/>
     </linearGradient>
-    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
-      <path d="M32 0H0V32" fill="none" stroke="#d3aa8d" stroke-opacity=".07"/>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M30 0H0V30" fill="none" stroke="#d4aa8b" stroke-opacity=".055"/>
     </pattern>
-    <filter id="glow"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softGlow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="9" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
   </defs>
-  <rect width="1200" height="420" rx="26" fill="url(#bg)"/>
-  <rect width="1200" height="420" rx="26" fill="url(#grid)"/>
-  <rect x="1" y="1" width="1198" height="418" rx="25" fill="none" stroke="#49362d"/>
+
+  <rect width="1200" height="460" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="460" rx="28" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1198" height="458" rx="27" fill="none" stroke="#4b3428"/>
+
   <g font-family="Inter,Segoe UI,Arial,sans-serif">
-    <text x="70" y="88" fill="#a78e80" font-size="13" font-weight="700" letter-spacing="4">PRIVATE CONTENT ADDRESSED STORAGE</text>
-    <text x="70" y="155" fill="#fff6ef" font-size="54" font-weight="760" letter-spacing="5">NAS ORANGE PI 4A</text>
-    <text x="72" y="192" fill="#b9aaa2" font-size="17" letter-spacing="1.3">Verified uploads  ·  deduplication  ·  preview  ·  sharing  ·  recovery</text>
-    <g transform="translate(72 249)">
-      <rect width="160" height="66" rx="14" fill="#211915" stroke="#63402e"/>
-      <path d="M26 22h15l6 6h25v22H26z" fill="none" stroke="#ff9c54" stroke-width="2.5"/>
-      <text x="94" y="40" fill="#f8e8dc" font-size="14" font-weight="700">YOUR FILES</text>
+    <text x="58" y="60" fill="#ae8a76" font-size="12" font-weight="700" letter-spacing="3.6">PERSONAL STORAGE CONTROL PLANE</text>
+    <path d="M1089 51h13l5 5h19v17h-37z" fill="none" stroke="#ff9853" stroke-width="1.8"/>
+    <text x="1075" y="65" text-anchor="end" fill="#ae8a76" font-size="10" font-weight="700" letter-spacing="2">OWNER ONLY</text>
+
+    <g transform="translate(58 118)">
+      <rect width="226" height="194" rx="18" fill="#1b1512" stroke="#53382a"/>
+      <text x="24" y="33" fill="#a2806e" font-size="10" font-weight="700" letter-spacing="2.4">OWNER DEVICE</text>
+      <rect x="42" y="60" width="142" height="91" rx="10" fill="#211813" stroke="#7e4b2e"/>
+      <rect x="55" y="73" width="116" height="65" rx="5" fill="#101313" stroke="#4b3b32"/>
+      <path d="M27 167h172" stroke="#7e4b2e" stroke-width="2"/>
+      <path d="M83 167h60l11 13H72z" fill="#2a1d16" stroke="#7e4b2e"/>
+      <path d="M82 96h24l8 8h31v21H82z" fill="none" stroke="#ff9a53" stroke-width="2"/>
     </g>
-    <path d="M232 282H335" stroke="url(#warm)" stroke-width="3"/>
-    <path d="m324 273 14 9-14 9" fill="none" stroke="#ff984e" stroke-width="3"/>
-    <g transform="translate(338 235)" filter="url(#glow)">
-      <rect width="250" height="96" rx="18" fill="#2a1911" stroke="#ff8a3d"/>
-      <text x="125" y="40" text-anchor="middle" fill="#fff4eb" font-size="17" font-weight="750">VERIFY + DEDUP</text>
-      <text x="125" y="67" text-anchor="middle" fill="#f8aa73" font-size="12" letter-spacing="1.5">SHA-256  ·  8 MiB</text>
+
+    <path d="M284 215H382" stroke="url(#ember)" stroke-width="2.5"/>
+    <path d="m369 205 16 10-16 10" fill="none" stroke="#ff914a" stroke-width="2.5"/>
+
+    <g transform="translate(385 106)" filter="url(#softGlow)">
+      <rect width="326" height="218" rx="22" fill="#24150e" stroke="#ff813d"/>
+      <text x="28" y="36" fill="#d3a185" font-size="10" font-weight="700" letter-spacing="2.4">VERIFIED INGEST</text>
+      <g transform="translate(28 62)">
+        <rect width="270" height="47" rx="10" fill="#2b1a12" stroke="#6b3c27"/>
+        <text x="18" y="29" fill="#fff0e6" font-size="12" font-weight="700">01  SPLIT INTO CHUNKS</text>
+        <circle cx="244" cy="23.5" r="5" fill="#ff813d"/>
+      </g>
+      <g transform="translate(28 119)">
+        <rect width="270" height="47" rx="10" fill="#2b1a12" stroke="#6b3c27"/>
+        <text x="18" y="29" fill="#fff0e6" font-size="12" font-weight="700">02  VERIFY SHA-256</text>
+        <path d="m237 23 5 5 10-12" fill="none" stroke="#ffc65b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="163" y="194" text-anchor="middle" fill="#b37656" font-size="10" font-weight="700" letter-spacing="1.8">RESUMABLE · DEDUPLICATED</text>
     </g>
-    <path d="M588 282H685" stroke="url(#warm)" stroke-width="3"/>
-    <path d="m674 273 14 9-14 9" fill="none" stroke="#ffc45a" stroke-width="3"/>
-    <g transform="translate(688 244)">
-      <rect width="190" height="76" rx="15" fill="#1c1a18" stroke="#665044"/>
-      <ellipse cx="43" cy="25" rx="19" ry="8" fill="none" stroke="#ffc45a" stroke-width="2"/>
-      <path d="M24 25v27c0 4 9 8 19 8s19-4 19-8V25M24 39c0 4 9 8 19 8s19-4 19-8" fill="none" stroke="#ffc45a" stroke-width="2"/>
-      <text x="78" y="36" fill="#fff2e8" font-size="14" font-weight="700">CHUNKS</text>
-      <text x="78" y="56" fill="#a9978c" font-size="11">ON DISK</text>
+
+    <path d="M711 215H808" stroke="url(#ember)" stroke-width="2.5"/>
+    <path d="m795 205 16 10-16 10" fill="none" stroke="#ffc65b" stroke-width="2.5"/>
+
+    <g transform="translate(811 100)">
+      <rect width="331" height="230" rx="18" fill="#171614" stroke="#514137"/>
+      <text x="24" y="34" fill="#9d8b80" font-size="10" font-weight="700" letter-spacing="2.4">PRIVATE STORAGE</text>
+      <g transform="translate(24 61)">
+        <rect width="283" height="60" rx="12" fill="#1d1a17" stroke="#5f493b"/>
+        <ellipse cx="34" cy="20" rx="15" ry="6" fill="none" stroke="#ffc65b" stroke-width="1.8"/>
+        <path d="M19 20v20c0 4 7 6 15 6s15-2 15-6V20M19 30c0 4 7 6 15 6s15-2 15-6" fill="none" stroke="#ffc65b" stroke-width="1.8"/>
+        <text x="64" y="27" fill="#f5eae3" font-size="12" font-weight="700">POSTGRESQL METADATA</text>
+        <text x="64" y="44" fill="#8f7f75" font-size="9" letter-spacing="1">OWNER · TREE · ORDER</text>
+      </g>
+      <g transform="translate(24 133)">
+        <rect width="283" height="60" rx="12" fill="#1d1a17" stroke="#5f493b"/>
+        <path d="M19 17h19l6 6h17v24H19z" fill="none" stroke="#ff914a" stroke-width="1.8"/>
+        <text x="76" y="27" fill="#f5eae3" font-size="12" font-weight="700">CONTENT CHUNKS</text>
+        <text x="76" y="44" fill="#8f7f75" font-size="9" letter-spacing="1">NVME · HASH ADDRESSED</text>
+      </g>
     </g>
-    <g transform="translate(904 244)">
-      <rect width="226" height="76" rx="15" fill="#1c1a18" stroke="#665044"/>
-      <circle cx="40" cy="38" r="18" fill="#2b211b" stroke="#ff9c54"/>
-      <path d="M40 27v22M31 38h18" stroke="#ffbd78" stroke-width="2.5"/>
-      <text x="72" y="36" fill="#fff2e8" font-size="14" font-weight="700">PRIVATE ACCESS</text>
-      <text x="72" y="56" fill="#a9978c" font-size="11">PREVIEW + SHARE</text>
+
+    <path d="M548 325V368" stroke="#805037" stroke-width="2" stroke-dasharray="4 5"/>
+    <g transform="translate(309 369)">
+      <rect width="582" height="59" rx="14" fill="#171513" stroke="#44352c"/>
+      <g fill="#ab9589" font-size="10" font-weight="700" letter-spacing="1.4">
+        <text x="73" y="35" text-anchor="middle">PREVIEW</text>
+        <text x="218" y="35" text-anchor="middle">DOWNLOAD</text>
+        <text x="364" y="35" text-anchor="middle">RECOVERY</text>
+        <text x="509" y="35" text-anchor="middle">CONTROLLED SHARE</text>
+      </g>
+      <g fill="#ff914a"><circle cx="14" cy="29" r="3"/><circle cx="159" cy="29" r="3"/></g>
+      <g fill="#ffc65b"><circle cx="305" cy="29" r="3"/><circle cx="450" cy="29" r="3"/></g>
     </g>
-    <path d="M878 282H904" stroke="#77533c" stroke-width="2" stroke-dasharray="5 5"/>
-    <text x="72" y="375" fill="#806c60" font-size="11" font-weight="700" letter-spacing="3">ORANGE PI READY</text>
-    <text x="1128" y="375" text-anchor="end" fill="#806c60" font-size="11" font-weight="700" letter-spacing="3">RESUMABLE BY DESIGN</text>
   </g>
 </svg>

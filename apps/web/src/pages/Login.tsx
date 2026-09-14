@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api";
 import {
@@ -22,6 +22,21 @@ export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [registrationAvailable, setRegistrationAvailable] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    api.registrationStatus()
+      .then(({ available }) => {
+        if (active) setRegistrationAvailable(available);
+      })
+      .catch(() => {
+        if (active) setRegistrationAvailable(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Password strength calculation for registration
   const passwordStrength = useMemo(() => {
@@ -97,16 +112,18 @@ export default function Login() {
           >
             Masuk
           </button>
-          <button
-            type="button"
-            className={`auth-tab ${mode === "register" ? "active" : ""}`}
-            onClick={() => {
-              setMode("register");
-              setErr("");
-            }}
-          >
-            Daftar Akun Baru
-          </button>
+          {registrationAvailable && (
+            <button
+              type="button"
+              className={`auth-tab ${mode === "register" ? "active" : ""}`}
+              onClick={() => {
+                setMode("register");
+                setErr("");
+              }}
+            >
+              Aktivasi Pemilik
+            </button>
+          )}
         </div>
 
         {/* Error Alert Box */}
@@ -216,7 +233,7 @@ export default function Login() {
             ) : (
               <>
                 <ShieldCheck size={17} />
-                <span>{mode === "login" ? "Masuk ke NAS" : "Daftarkan Akun"}</span>
+                <span>{mode === "login" ? "Masuk ke NAS" : "Aktifkan Akun Pemilik"}</span>
               </>
             )}
           </button>
@@ -235,7 +252,7 @@ export default function Login() {
             </div>
           </div>
           <div className="homelab-sub-footer">
-            Terenkripsi end-to-end via <b>Cloudflare Tunnel</b> & <b>Tailscale</b>
+            Akses privat melalui <b>Cloudflare Tunnel</b> & <b>Tailscale</b>
           </div>
         </div>
       </div>

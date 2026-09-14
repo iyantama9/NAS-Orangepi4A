@@ -8,7 +8,8 @@ NAS Orange Pi 4A stores user credentials, session tokens, file names, directory 
 
 - Passwords are hashed with Argon2.
 - Session tokens use 32 random bytes encoded as base64url and are stored in PostgreSQL.
-- Session cookies are `HttpOnly` and `SameSite=Lax`.
+- Production session cookies are `HttpOnly`, `Secure`, and `SameSite=Lax`.
+- Registration is disabled by default and can create only the first owner during explicit bootstrap.
 - Node operations enforce authenticated ownership.
 - Uploads verify declared length and SHA-256 before accepting chunk content.
 - Share tokens use 32 random bytes and support expiration and revocation.
@@ -17,9 +18,7 @@ NAS Orange Pi 4A stores user credentials, session tokens, file names, directory 
 
 ## Known gaps
 
-- The session cookie currently sets `secure: false`, so the application code does not require HTTPS-only cookie transport.
-- Registration is public and has no invitation or administrator gate.
-- Registration and login have no application-level rate limit.
+- Login and the temporary owner-bootstrap route have no application-level rate limit.
 - No automated security or integration test suite is configured.
 - System information can reveal operational details if exposed too broadly.
 - Startup migration behavior does not provide a documented rollback path.
@@ -28,16 +27,15 @@ Do not describe a public deployment as hardened until these gaps are addressed a
 
 ## Required public-exposure work
 
-1. Set the session cookie `secure` flag in HTTPS deployments and test it behind the selected proxy.
-2. Disable open registration after the initial administrator is created, or require an invitation.
-3. Add shared rate limits for registration, login, public share metadata, and public downloads.
-4. Put the service behind TLS with current protocols and automatic certificate renewal.
-5. Restrict administration and detailed system information to a private network or identity-aware proxy.
-6. Set request-size, concurrency, and timeout limits that still support 8 MiB chunks and Range streams.
-7. Apply storage quotas per user and global reserve thresholds.
-8. Record security-relevant actions such as login, share creation, revocation, purge, and policy changes.
-9. Scan dependencies and container images during releases.
-10. Test backup restoration and ransomware recovery.
+1. Add shared rate limits for owner bootstrap, login, public share metadata, and public downloads.
+2. Put the service behind TLS with current protocols and automatic certificate renewal.
+3. Keep owner bootstrap disabled except during a controlled first installation.
+4. Restrict administration and detailed system information to a private network or identity-aware proxy.
+5. Set request-size, concurrency, and timeout limits that still support 8 MiB chunks and Range streams.
+6. Apply storage quotas and global reserve thresholds.
+7. Record security-relevant actions such as login, share creation, revocation, purge, and policy changes.
+8. Scan dependencies and container images during releases.
+9. Test backup restoration and ransomware recovery.
 
 ## Share links
 

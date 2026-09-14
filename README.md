@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="docs/assets/nas-hero.svg" alt="NAS Orange Pi 4A storage control plane" width="100%" />
+  <img src="docs/assets/arsiva-hero.svg" alt="Arsiva storage control plane" width="100%" />
 </p>
 
-<h1 align="center">NAS Orange Pi 4A</h1>
+<h1 align="center">Arsiva</h1>
 
 <p align="center">
   A personal file workspace with verified resumable uploads, content deduplication, previews, recovery, and controlled sharing.
@@ -21,7 +21,7 @@
 
 ## Overview
 
-NAS Orange Pi 4A combines a responsive React workspace, an Express API, PostgreSQL metadata, and content-addressed file storage. The browser uploads verified chunks that can resume after interruption. The server assembles logical files from ordered hashes, streams full or partial content, manages trash and cleanup, and creates revocable public links when the owner chooses to share something.
+Arsiva is a personal storage platform designed for Orange Pi 4A. It combines a responsive React workspace, an Express API, PostgreSQL metadata, and content-addressed file storage. The browser uploads verified chunks that can resume after interruption. The server assembles logical files from ordered hashes, streams full or partial content, manages trash and cleanup, and creates revocable public links when the owner chooses to share something.
 
 The production image serves the web application and API from one origin. Docker Compose mounts PostgreSQL and file data on the host so application images can be replaced without moving stored content.
 

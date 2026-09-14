@@ -531,7 +531,7 @@ export default function Files({
           </button>
           <div className="mobile-brand" onClick={() => nav("/")}>
             <span className="mobile-logo-emoji">🍊</span>
-            <span className="mobile-brand-title">NAS Pi</span>
+            <span className="mobile-brand-title">Arsiva</span>
           </div>
           <div className="mobile-avatar-badge" onClick={() => setMobileMenuOpen(true)}>
             {userLabel.charAt(0).toUpperCase()}
@@ -556,7 +556,7 @@ export default function Files({
             {isRootDashboard ? (
               <>
                 <h1>Halo, {userLabel} 👋</h1>
-                <p>Selamat datang di NAS Pi</p>
+                <p>Selamat datang di Arsiva</p>
               </>
             ) : (
               <div className="breadcrumbs-bar">

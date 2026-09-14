@@ -115,7 +115,7 @@ export default function SharedByMe() {
           </button>
           <div className="mobile-brand" onClick={() => nav("/")}>
             <span className="mobile-logo-emoji">🍊</span>
-            <span className="mobile-brand-title">NAS Pi</span>
+            <span className="mobile-brand-title">Arsiva</span>
           </div>
           <div className="mobile-avatar-badge" onClick={() => setMobileMenuOpen(true)}>
             {userLabel.charAt(0).toUpperCase()}

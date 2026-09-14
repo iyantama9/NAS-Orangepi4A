@@ -62,8 +62,8 @@ export default function Sidebar({
                 <span>🍊</span>
               </div>
               <div className="brand-meta">
-                <h1 className="brand-name">NAS Pi</h1>
-                <span className="brand-tagline">Personal Cloud Storage</span>
+                <h1 className="brand-name">Arsiva</h1>
+                <span className="brand-tagline">Private Storage</span>
               </div>
             </div>
 

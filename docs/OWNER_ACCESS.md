@@ -2,7 +2,7 @@
 
 ## Policy
 
-NAS Orange Pi 4A is a personal service with one owner account. Registration is disabled by default and is used only to bootstrap an empty database.
+Arsiva is a personal service with one owner account. Registration is disabled by default and is used only to bootstrap an empty database.
 
 The control flag is:
 

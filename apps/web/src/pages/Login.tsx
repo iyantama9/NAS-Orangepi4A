@@ -88,8 +88,8 @@ export default function Login() {
         <div className="brand">
           <div className="brand-badge">🍊</div>
           <div>
-            <h1>NAS Pi</h1>
-            <div className="sub">Personal Cloud Storage</div>
+            <h1>Arsiva</h1>
+            <div className="sub">Private Storage</div>
           </div>
         </div>
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-NAS Orange Pi 4A stores user credentials, session tokens, file names, directory structure, file contents, share tokens, and host metadata. A compromise can expose or destroy the complete stored dataset.
+Arsiva stores user credentials, session tokens, file names, directory structure, file contents, share tokens, and host metadata. A compromise can expose or destroy the complete stored dataset.
 
 ## Current controls
 

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">NAS Orange Pi 4A</title>
+  <desc id="desc">A dark warm storage diagram showing files split into verified chunks and stored on a private Orange Pi server.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#160d09"/>
+      <stop offset="0.5" stop-color="#151312"/>
+      <stop offset="1" stop-color="#0e1213"/>
+    </linearGradient>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff8a3d"/>
+      <stop offset="1" stop-color="#ffc45a"/>
+    </linearGradient>
+    <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#d3aa8d" stroke-opacity=".07"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1200" height="420" rx="26" fill="url(#bg)"/>
+  <rect width="1200" height="420" rx="26" fill="url(#grid)"/>
+  <rect x="1" y="1" width="1198" height="418" rx="25" fill="none" stroke="#49362d"/>
+  <g font-family="Inter,Segoe UI,Arial,sans-serif">
+    <text x="70" y="88" fill="#a78e80" font-size="13" font-weight="700" letter-spacing="4">PRIVATE CONTENT ADDRESSED STORAGE</text>
+    <text x="70" y="155" fill="#fff6ef" font-size="54" font-weight="760" letter-spacing="5">NAS ORANGE PI 4A</text>
+    <text x="72" y="192" fill="#b9aaa2" font-size="17" letter-spacing="1.3">Verified uploads  ·  deduplication  ·  preview  ·  sharing  ·  recovery</text>
+    <g transform="translate(72 249)">
+      <rect width="160" height="66" rx="14" fill="#211915" stroke="#63402e"/>
+      <path d="M26 22h15l6 6h25v22H26z" fill="none" stroke="#ff9c54" stroke-width="2.5"/>
+      <text x="94" y="40" fill="#f8e8dc" font-size="14" font-weight="700">YOUR FILES</text>
+    </g>
+    <path d="M232 282H335" stroke="url(#warm)" stroke-width="3"/>
+    <path d="m324 273 14 9-14 9" fill="none" stroke="#ff984e" stroke-width="3"/>
+    <g transform="translate(338 235)" filter="url(#glow)">
+      <rect width="250" height="96" rx="18" fill="#2a1911" stroke="#ff8a3d"/>
+      <text x="125" y="40" text-anchor="middle" fill="#fff4eb" font-size="17" font-weight="750">VERIFY + DEDUP</text>
+      <text x="125" y="67" text-anchor="middle" fill="#f8aa73" font-size="12" letter-spacing="1.5">SHA-256  ·  8 MiB</text>
+    </g>
+    <path d="M588 282H685" stroke="url(#warm)" stroke-width="3"/>
+    <path d="m674 273 14 9-14 9" fill="none" stroke="#ffc45a" stroke-width="3"/>
+    <g transform="translate(688 244)">
+      <rect width="190" height="76" rx="15" fill="#1c1a18" stroke="#665044"/>
+      <ellipse cx="43" cy="25" rx="19" ry="8" fill="none" stroke="#ffc45a" stroke-width="2"/>
+      <path d="M24 25v27c0 4 9 8 19 8s19-4 19-8V25M24 39c0 4 9 8 19 8s19-4 19-8" fill="none" stroke="#ffc45a" stroke-width="2"/>
+      <text x="78" y="36" fill="#fff2e8" font-size="14" font-weight="700">CHUNKS</text>
+      <text x="78" y="56" fill="#a9978c" font-size="11">ON DISK</text>
+    </g>
+    <g transform="translate(904 244)">
+      <rect width="226" height="76" rx="15" fill="#1c1a18" stroke="#665044"/>
+      <circle cx="40" cy="38" r="18" fill="#2b211b" stroke="#ff9c54"/>
+      <path d="M40 27v22M31 38h18" stroke="#ffbd78" stroke-width="2.5"/>
+      <text x="72" y="36" fill="#fff2e8" font-size="14" font-weight="700">PRIVATE ACCESS</text>
+      <text x="72" y="56" fill="#a9978c" font-size="11">PREVIEW + SHARE</text>
+    </g>
+    <path d="M878 282H904" stroke="#77533c" stroke-width="2" stroke-dasharray="5 5"/>
+    <text x="72" y="375" fill="#806c60" font-size="11" font-weight="700" letter-spacing="3">ORANGE PI READY</text>
+    <text x="1128" y="375" text-anchor="end" fill="#806c60" font-size="11" font-weight="700" letter-spacing="3">RESUMABLE BY DESIGN</text>
+  </g>
+</svg>
